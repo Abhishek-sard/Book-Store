@@ -62,6 +62,40 @@ app.get("/books", async (request, response) => {
   }
 });
 
+
+app.get("/books/:id", async (request, response) => {
+  try {
+    const { id } = request.params;
+    
+    // Validate the ID format first
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return response.status(400).json({ 
+        message: "Invalid book ID format" 
+      });
+    }
+
+    // Find the book by ID (corrected from findById({}))
+    const book = await Book.findById(id);
+
+    // Check if book exists
+    if (!book) {
+      return response.status(404).json({ 
+        message: "Book not found" 
+      });
+    }
+
+    // Return the found book
+    return response.status(200).json(book);
+
+  } catch (error) {
+    console.error("Error in GET /books/:id:", error.message);
+    response.status(500).json({
+      message: "Server error while fetching book",
+      error: error.message
+    });
+  }
+});
+
 // Connect to MongoDB and start server
 mongoose
   .connect(MONGODB_URI)
