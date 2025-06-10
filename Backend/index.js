@@ -143,7 +143,48 @@ app.put('/books/:id', async (request, response) => {
     }
 });
 
+//Route for delete a book
+app.delete('/books/:id', async (request, response) => {
+    try {
+        const { id } = request.params;
 
+        // Validate ID format
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return response.status(400).json({
+                success: false,
+                message: "Invalid book ID format",
+                error: "Provided ID is not a valid MongoDB ObjectId"
+            });
+        }
+
+        // Delete the book
+        const deletedBook = await Book.findByIdAndDelete(id);
+
+        if (!deletedBook) {
+            return response.status(404).json({
+                success: false,
+                message: "Book not found",
+                error: `No book found with ID: ${id}`
+            });
+        }
+
+        // Return success response
+        return response.status(200).json({
+            success: true,
+            message: "Book deleted successfully",
+            data: deletedBook
+        });
+
+    } catch (error) {
+        console.error("Error in DELETE /books/:id:", error.message);
+        return response.status(500).json({
+            success: false,
+            message: "Internal server error while deleting book",
+            error: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
+    }
+});
    
 // Connect to MongoDB and start server
 mongoose
