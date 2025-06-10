@@ -96,6 +96,55 @@ app.get("/books/:id", async (request, response) => {
   }
 });
 
+
+//route for update a book
+app.put('/books/:id', async (request, response) => {
+    try {
+        // Validate request body
+        if (!request.body.title || !request.body.author || !request.body.publishYear || !request.body.price) {
+            return response.status(400).json({
+                message: "Send all required fields: title, author, publishYear, price",
+            });
+        }
+
+        // Validate ID format
+        const { id } = request.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return response.status(400).json({
+                message: "Invalid book ID format"
+            });
+        }
+
+        // Update the book
+        const result = await Book.findByIdAndUpdate(
+            id,
+            request.body,
+            { new: true } // Return the updated document
+        );
+
+        if (!result) {
+            return response.status(404).json({
+                message: "Book not found"
+            });
+        }
+
+        // Return the updated book
+        return response.status(200).json({
+            message: "Book updated successfully",
+            data: result
+        });
+
+    } catch (error) {
+        console.error("Error in PUT /books/:id:", error.message);
+        return response.status(500).json({
+            message: "Server error while updating book",
+            error: error.message
+        });
+    }
+});
+
+
+   
 // Connect to MongoDB and start server
 mongoose
   .connect(MONGODB_URI)
